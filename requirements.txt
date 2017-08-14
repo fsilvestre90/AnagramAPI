@@ -1,0 +1,24 @@
+Flask>=0.11
+flask-restplus>=0.9.1,!=0.10.0
+
+# Application server for both development and production.
+gunicorn==19.4.5
+werkzeug==0.11.15
+Flask-CORS
+# CLI.
+Click==6.4
+
+# Data and workers.
+walrus
+redis
+marshmallow>=2.13.5
+flask-marshmallow==0.7.0
+marshmallow-sqlalchemy==0.12.0
+webargs>=1.4.0
+apispec>=0.20.0
+celery==4.0.2
+eventlet==0.21.0
+passlib==1.7.1
+arrow==0.8.0
+flower
+six

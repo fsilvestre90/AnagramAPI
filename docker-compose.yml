@@ -1,0 +1,61 @@
+version: '2'
+
+services:
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3-management
+    ports:
+      - "8080:15672"
+      - "5672:5672"
+
+  redis:
+    image: 'redis:3.0-alpine'
+    command: redis-server --requirepass devpassword
+    volumes:
+      - 'redis:/var/lib/redis/data'
+    ports:
+      - '6379:6379'
+
+  api:
+    build: ./
+    command: gunicorn -c gunicorn.py --reload "app:create_app()"
+    volumes:
+      - '.:/app'
+    ports:
+        - '8000:8000'
+    links:
+      - redis
+      - rabbit
+    depends_on:
+      - redis
+      - rabbit
+
+  monitor:
+    build: ./
+    command: celery -A app.modules.words.tasks worker -Q high --pool=eventlet --autoscale=10,1 --port=5555 --loglevel=INFO -n worker1@%h flower
+    volumes:
+      - '.:/app'
+    entrypoint: flower
+    ports:
+       - '5555:5555'
+    links:
+      - rabbit
+      - redis
+    depends_on:
+      - rabbit
+      - redis
+
+  worker:
+    build: ./
+    command: celery -A app.modules.words.tasks worker -Q high --pool=eventlet --autoscale=10,1 --loglevel=INFO -n worker1@%h
+    volumes:
+      - '.:/app'
+    links:
+      - rabbit
+      - redis
+    depends_on:
+      - rabbit
+      - redis
+
+volumes:
+  redis:
